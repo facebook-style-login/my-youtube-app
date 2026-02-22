@@ -1,53 +1,41 @@
-# To learn more about how to use Nix to configure your environment
-# see: https://developers.google.com/idx/guides/customize-idx-env
+
 { pkgs, ... }: {
-  # Which nixpkgs channel to use.
-  channel = "stable-24.05"; # or "unstable"
-  # Use https://search.nixos.org/packages to find packages
+  # Use the stable channel for reproducibility.
+  channel = "stable-24.05";
+
+  # A list of packages to install from the specified channel.
+  # You can search for packages on the NixOS package search:
+  # https://search.nixos.org/packages
   packages = [
-    # pkgs.go
-    # pkgs.python311
-    # pkgs.python311Packages.pip
-    # pkgs.nodejs_20
-    # pkgs.nodePackages.nodemon
-  ];
-  # Sets environment variables in the workspace
-  env = {};
+  pkgs.nodejs_20
+  pkgs.nodePackages.prisma
+  pkgs.openssl # এটি নতুন যোগ করুন
+];
+
+  # VS Code extensions to install from the Open VSX Registry.
+  # https://open-vsx.org/
   idx = {
-    # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
     extensions = [
-      # "vscodevim.vim"
-      "google.gemini-cli-vscode-ide-companion"
+      "dbaeumer.vscode-eslint"
     ];
-    # Enable previews
-    previews = {
-      enable = true;
-      previews = {
-        # web = {
-        #   # Example: run "npm run dev" with PORT set to IDX's defined port for previews,
-        #   # and show it in IDX's web preview panel
-        #   command = ["npm" "run" "dev"];
-        #   manager = "web";
-        #   env = {
-        #     # Environment variables to set for your server
-        #     PORT = "$PORT";
-        #   };
-        # };
-      };
-    };
-    # Workspace lifecycle hooks
+
+    # Workspace lifecycle hooks.
     workspace = {
-      # Runs when a workspace is first created
+      # Runs when a workspace is first created.
       onCreate = {
-        # Example: install JS dependencies from NPM
-        # npm-install = "npm install";
-        # Open editors for the following files by default, if they exist:
-        default.openFiles = [ ".idx/dev.nix" "README.md" ];
+        npm-install = "npm install";
       };
-      # Runs when the workspace is (re)started
+
+      # Runs every time the workspace is (re)started.
+      # We will use this hook to load environment variables from the .env file.
       onStart = {
-        # Example: start a background task to watch and re-build backend code
-        # watch-backend = "npm run watch-backend";
+        load-env = ''
+          if [ -f .env ]; then
+            set -a
+            source .env
+            set +a
+          fi
+        '';
       };
     };
   };

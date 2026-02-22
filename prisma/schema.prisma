@@ -1,0 +1,40 @@
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  apiKeys     ApiKey[]
+  savedTrends String? // store favorite trends as a JSON string
+  videos      Video[]
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  service   String   // "youtube" or "gemini"
+  key       String   // encrypted
+  quotaUsed Int      @default(0)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Video {
+  id          String   @id @default(cuid())
+  url         String   @unique
+  title       String
+  channel     String
+  views       Int
+  likes       Int
+  earnings    Float?   // estimated
+  analyzedAt  DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+}
