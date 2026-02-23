@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo, SVGProps } from 'react';
+import { Suspense, useState, useEffect, useMemo, SVGProps } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 // --- TYPE DEFINITIONS ---
@@ -110,8 +110,8 @@ const GeneratedCard = ({ title, content, onCopy }: { title: string; content: str
     );
 };
 
-// --- MAIN PAGE COMPONENT ---
-export default function DashboardPage() {
+// --- MAIN DASHBOARD COMPONENT ---
+function Dashboard() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const initialGeo = searchParams.get('geo') || 'US';
@@ -220,5 +220,19 @@ export default function DashboardPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// --- PAGE LOADER ---
+export default function DashboardPage() {
+    // As the Dashboard uses useSearchParams, it needs to be wrapped in a Suspense boundary.
+    return (
+        <Suspense fallback={
+            <div className="flex justify-center items-center h-screen bg-background text-white text-lg">
+                <p>Loading Dashboard...</p>
+            </div>
+        }>
+            <Dashboard />
+        </Suspense>
     );
 }
